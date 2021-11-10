@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <curses.h>
+#include <locale.h>
 
 // need to know where the front and back of the snake are
 // 2d array: position (x, y), whether it's a snake, direction
@@ -21,6 +23,13 @@
 #define START_X ((WIDTH / 2) - 1)
 #define START_Y ((HEIGHT / 2) - 1)
 
+#define ESC 27
+#define CTRL 91
+#define ARROW_UP 65
+#define ARROW_DOWN 66
+#define ARROW_LEFT 68
+#define ARROW_RIGHT 67
+
 int board[HEIGHT][WIDTH];
 
 int snake_head_x = START_X;
@@ -30,14 +39,14 @@ int snake_tail_x = START_X;
 int snake_tail_y = START_Y;
 
 void display_board() {
-  printf("\n");
+  printf("\n\r");
 
   for(int y = 0; y < HEIGHT; ++y) {
     for(int x = 0; x < WIDTH; ++x) {
       printf("%d ", board[y][x]);
     }
 
-    printf("\n");
+    printf("\n\r");
   }
 }
 
@@ -57,12 +66,14 @@ void initialize_board() {
   place_apple();
 }
 
-void move_snake(int direction) {
+void move_snake_body() {
+  // starting with tail, take over the value of the next spot?
+}
+
+void move_snake_head(int direction) {
   // (later: unless apple eaten)
   // remove snake from tail current location
   // increment tail and head
-
-  board[snake_tail_y][snake_tail_x] = 0;
 
   switch(direction) {
     case SNAKE_UP:
@@ -79,48 +90,81 @@ void move_snake(int direction) {
       break;
   }
 
-  snake_tail_x = snake_head_x;
-  snake_tail_y = snake_head_y;
-
   int new_location = board[snake_head_y][snake_head_x];
 
   if (new_location == EMPTY && snake_head_x < WIDTH && snake_head_y < HEIGHT) {
-    printf("new location: %d", new_location);
+    board[snake_tail_y][snake_tail_x] = 0;
+    snake_tail_x = snake_head_x;
+    snake_tail_y = snake_head_y;
+
     board[snake_head_y][snake_head_x] = direction;
   } else if (new_location == APPLE) {
-    // make snake longer
+    // don't replace tail, so tail grows
+    board[snake_head_y][snake_head_x] = direction;
+    place_apple();
   } else {
-    printf("Sorry, you lost!\n");
-    exit(1);
+    printf("Sorry, you lost!\n\r");
+    // exit(1);
   }
 
 }
 
-// decide where snake head will be next
-// if theres an apple, make snake longer
-// if theres a snake, lose the game
-// if it's an edge, lose the game
-void next_board() {
-  // for now, snake is just moving to the right
-  move_snake(SNAKE_RIGHT);
+void next_board(int direction) {
+  // for any non-head snake, the snake takes over the value of the next spot
+  move_snake_head(direction);
+}
+
+int get_arrow_keys() {
+  refresh();
+  timeout(1000);
+  int c;
+
+  if (getch() == ESC) {
+    if (getch() == CTRL) {
+      c = getch();
+    }
+  }
+
+  return c;
 }
 
 int main() {
   srand(time(NULL));
+  keypad(stdscr, TRUE);
   initialize_board();
 
-  while(1) {
-    usleep(1000000);
+  setlocale(LC_ALL, "");
+  initscr();
+  cbreak();
 
+  int next_direction = SNAKE_RIGHT;
+
+  while(1) {
     printf("\033[H\033[J\033[H");
 
-    // char input[200];
-    // gets(input);
-    // printf("input: %s", input);
-
-    next_board();
+    next_board(next_direction);
     display_board();
+
+    int c = get_arrow_keys();
+
+    switch(c) {
+      case ARROW_UP:
+        next_direction = SNAKE_UP;
+        break;
+      case ARROW_DOWN:
+        next_direction = SNAKE_DOWN;
+        break;
+      case ARROW_LEFT:
+        next_direction = SNAKE_LEFT;
+        break;
+      case ARROW_RIGHT:
+        next_direction = SNAKE_RIGHT;
+        break;
+      default:
+        break;
+    }
   }
 
+  endwin();
   return 0;
 }
