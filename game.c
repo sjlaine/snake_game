@@ -66,14 +66,45 @@ void initialize_board() {
   place_apple();
 }
 
-void move_snake_body() {
-  // starting with tail, take over the value of the next spot?
+void move_snake_tail(int tail_direction) {
+  // unless an apple eaten, move tail in the same way as head
+  int direction;
+
+  if (tail_direction == 0) {
+    direction = board[snake_tail_y][snake_tail_x];
+  } else {
+    direction = tail_direction;
+  }
+
+  board[snake_tail_y][snake_tail_x] = 0;
+
+  switch(direction) {
+    case SNAKE_UP:
+      snake_tail_y--;
+      break;
+    case SNAKE_RIGHT:
+      snake_tail_x++;
+      break;
+    case SNAKE_DOWN:
+      snake_tail_y++;
+      break;
+    case SNAKE_LEFT:
+      snake_tail_x--;
+      break;
+  }
+
+  board[snake_tail_y][snake_tail_x] = direction;
 }
 
 void move_snake_head(int direction) {
   // (later: unless apple eaten)
   // remove snake from tail current location
   // increment tail and head
+  int tail_direction = 0;
+
+  if (snake_head_x == snake_tail_x && snake_head_y == snake_tail_y) {
+    tail_direction = direction;
+  }
 
   switch(direction) {
     case SNAKE_UP:
@@ -93,11 +124,12 @@ void move_snake_head(int direction) {
   int new_location = board[snake_head_y][snake_head_x];
 
   if (new_location == EMPTY && snake_head_x < WIDTH && snake_head_y < HEIGHT) {
-    board[snake_tail_y][snake_tail_x] = 0;
-    snake_tail_x = snake_head_x;
-    snake_tail_y = snake_head_y;
+    // board[snake_tail_y][snake_tail_x] = 0;
+    // snake_tail_x = snake_head_x;
+    // snake_tail_y = snake_head_y;
 
     board[snake_head_y][snake_head_x] = direction;
+    move_snake_tail(tail_direction);
   } else if (new_location == APPLE) {
     // don't replace tail, so tail grows
     board[snake_head_y][snake_head_x] = direction;
@@ -168,3 +200,7 @@ int main() {
   endwin();
   return 0;
 }
+
+// move head and move tail funcs
+// move head already exists basically
+// move tail: unless apple, move tail the same as head
