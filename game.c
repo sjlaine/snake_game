@@ -146,7 +146,8 @@ void next_board(int direction) {
 
 int get_arrow_keys() {
   refresh();
-  timeout(1000);
+// record time
+  unsigned long timestamp = clock_gettime
   int c;
 
   if (getch() == ESC) {
@@ -154,7 +155,8 @@ int get_arrow_keys() {
       c = getch();
     }
   }
-
+// calculate time elapsed
+// if less than 1 sec, timeout for the difference
   return c;
 }
 
@@ -165,7 +167,7 @@ int main() {
 
   setlocale(LC_ALL, "");
   initscr();
-  cbreak();
+  halfdelay(10);
 
   int next_direction = SNAKE_RIGHT;
 
