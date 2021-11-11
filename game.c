@@ -66,79 +66,77 @@ void initialize_board() {
   place_apple();
 }
 
-void move_snake_tail(int tail_direction) {
+void remove_tail() {
   // unless an apple eaten, move tail in the same way as head
-  int direction;
+  int current_tail_direction = board[snake_tail_y][snake_tail_x];
+  int new_tail_x = snake_tail_x;
+  int new_tail_y = snake_tail_y;
 
-  if (tail_direction == 0) {
-    direction = board[snake_tail_y][snake_tail_x];
-  } else {
-    direction = tail_direction;
+  switch(current_tail_direction) {
+    case SNAKE_UP:
+      new_tail_y--;
+      break;
+    case SNAKE_RIGHT:
+      new_tail_x++;
+      break;
+    case SNAKE_DOWN:
+      new_tail_y++;
+      break;
+    case SNAKE_LEFT:
+      new_tail_x--;
+      break;
   }
 
   board[snake_tail_y][snake_tail_x] = 0;
-
-  switch(direction) {
-    case SNAKE_UP:
-      snake_tail_y--;
-      break;
-    case SNAKE_RIGHT:
-      snake_tail_x++;
-      break;
-    case SNAKE_DOWN:
-      snake_tail_y++;
-      break;
-    case SNAKE_LEFT:
-      snake_tail_x--;
-      break;
-  }
-
-  board[snake_tail_y][snake_tail_x] = direction;
+  snake_tail_x = new_tail_x;
+  snake_tail_y = new_tail_y;
 }
 
 void move_snake_head(int direction) {
   // (later: unless apple eaten)
   // remove snake from tail current location
   // increment tail and head
-  int tail_direction = 0;
-
-  if (snake_head_x == snake_tail_x && snake_head_y == snake_tail_y) {
-    tail_direction = direction;
-  }
+  int new_head_x = snake_head_x;
+  int new_head_y = snake_head_y;
 
   switch(direction) {
     case SNAKE_UP:
-      snake_head_y--;
+      new_head_y--;
       break;
     case SNAKE_RIGHT:
-      snake_head_x++;
+      new_head_x++;
       break;
     case SNAKE_DOWN:
-      snake_head_y++;
+      new_head_y++;
       break;
     case SNAKE_LEFT:
-      snake_head_x--;
+      new_head_x--;
       break;
   }
 
-  int new_location = board[snake_head_y][snake_head_x];
+  int new_location_type = board[new_head_y][new_head_x];
 
-  if (new_location == EMPTY && snake_head_x < WIDTH && snake_head_y < HEIGHT) {
-    // board[snake_tail_y][snake_tail_x] = 0;
-    // snake_tail_x = snake_head_x;
-    // snake_tail_y = snake_head_y;
 
-    board[snake_head_y][snake_head_x] = direction;
-    move_snake_tail(tail_direction);
-  } else if (new_location == APPLE) {
-    // don't replace tail, so tail grows
-    board[snake_head_y][snake_head_x] = direction;
-    place_apple();
-  } else {
+  if (new_location_type >= SNAKE_UP || snake_head_x >= WIDTH || snake_head_y >= HEIGHT) {
     printf("Sorry, you lost!\n\r");
-    // exit(1);
-  }
+    exit(1);
+  } else {
+    // set the prev head to current direction
+    board[snake_head_y][snake_head_x] = direction;
+    // set new head to current direction
+    board[new_head_y][new_head_x] = direction;
 
+    // set new head coords
+    snake_head_x = new_head_x;
+    snake_head_y = new_head_y;
+
+    if (new_location_type == APPLE) {
+      // leave tail alone
+      place_apple();
+    } else {
+      remove_tail();
+    }
+  }
 }
 
 void next_board(int direction) {
