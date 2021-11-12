@@ -30,6 +30,16 @@
 #define ARROW_LEFT 68
 #define ARROW_RIGHT 67
 
+// colors
+#define MAG "\e[0;35m"
+#define GRN "\e[0;32m"
+#define BGRN "\e[1;32m"
+#define CYN "\e[0;36m"
+#define BCYN "\e[1;36m"
+#define LGRY "\e[0;37m"
+
+#define reset "\e[0m"
+
 int board[HEIGHT][WIDTH];
 
 int snake_head_x = START_X;
@@ -42,8 +52,31 @@ void display_board() {
   printf("\n\r");
 
   for(int y = 0; y < HEIGHT; ++y) {
+    printf(" ");
     for(int x = 0; x < WIDTH; ++x) {
-      printf("%d ", board[y][x]);
+      int spot = board[y][x];
+      if (spot == APPLE) {
+        printf(MAG "0 " reset);
+      } else if (x == snake_head_x && y == snake_head_y) {
+        switch(spot) {
+          case SNAKE_UP:
+            printf(GRN "^ " reset);
+            break;
+          case SNAKE_RIGHT:
+            printf(GRN "> " reset);
+            break;
+          case SNAKE_DOWN:
+            printf(GRN "v " reset);
+            break;
+          case SNAKE_LEFT:
+            printf(GRN "< " reset);
+            break;
+        }
+      } else if (spot >= SNAKE_UP) {
+        printf(GRN "O " reset);
+      } else {
+        printf(LGRY ". " reset);
+      }
     }
 
     printf("\n\r");
@@ -163,7 +196,7 @@ int main() {
   keypad(stdscr, TRUE);
   initialize_board();
 
-  setlocale(LC_ALL, "");
+  // setlocale(LC_ALL, "");
   initscr();
   cbreak();
 
@@ -198,7 +231,3 @@ int main() {
   endwin();
   return 0;
 }
-
-// move head and move tail funcs
-// move head already exists basically
-// move tail: unless apple, move tail the same as head
