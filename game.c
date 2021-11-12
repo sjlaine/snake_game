@@ -14,11 +14,11 @@
 #define HEIGHT 21
 
 #define EMPTY 0
-#define APPLE 1 // 1 = apple
-#define SNAKE_UP 2 // 2 = snake up
-#define SNAKE_RIGHT 3 // 3 = snake right
-#define SNAKE_DOWN 4 // 4 = snake down
-#define SNAKE_LEFT 5 // 5 = snake left
+#define APPLE 1
+#define SNAKE_UP 2
+#define SNAKE_RIGHT 3
+#define SNAKE_DOWN 4
+#define SNAKE_LEFT 5
 
 #define START_X ((WIDTH / 2) - 1)
 #define START_Y ((HEIGHT / 2) - 1)
@@ -100,7 +100,6 @@ void initialize_board() {
 }
 
 void remove_tail() {
-  // unless an apple eaten, move tail in the same way as head
   int current_tail_direction = board[snake_tail_y][snake_tail_x];
   int new_tail_x = snake_tail_x;
   int new_tail_y = snake_tail_y;
@@ -126,9 +125,6 @@ void remove_tail() {
 }
 
 void move_snake_head(int direction) {
-  // (later: unless apple eaten)
-  // remove snake from tail current location
-  // increment tail and head
   int new_head_x = snake_head_x;
   int new_head_y = snake_head_y;
 
@@ -173,7 +169,6 @@ void move_snake_head(int direction) {
 }
 
 void next_board(int direction) {
-  // for any non-head snake, the snake takes over the value of the next spot
   move_snake_head(direction);
 }
 
@@ -195,8 +190,6 @@ int main() {
   srand(time(NULL));
   keypad(stdscr, TRUE);
   initialize_board();
-
-  // setlocale(LC_ALL, "");
   initscr();
   cbreak();
 
