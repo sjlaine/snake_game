@@ -33,14 +33,13 @@
 // colors
 #define MAG "\e[0;35m"
 #define GRN "\e[0;32m"
-#define BGRN "\e[1;32m"
-#define CYN "\e[0;36m"
 #define BCYN "\e[1;36m"
 #define LGRY "\e[0;37m"
 
 #define reset "\e[0m"
 
 int board[HEIGHT][WIDTH];
+int score = 0;
 
 int snake_head_x = START_X;
 int snake_head_y = START_Y;
@@ -147,7 +146,8 @@ void move_snake_head(int direction) {
 
 
   if (new_location_type >= SNAKE_UP || snake_head_x >= WIDTH || snake_head_y >= HEIGHT) {
-    printf("Sorry, you lost!\n\r");
+    endwin();
+    printf(BCYN "Sorry, you lost!\n\rScore: %d\n\r" reset, score);
     exit(1);
   } else {
     // set the prev head to current direction
@@ -161,6 +161,7 @@ void move_snake_head(int direction) {
 
     if (new_location_type == APPLE) {
       // leave tail alone
+      score++;
       place_apple();
     } else {
       remove_tail();
