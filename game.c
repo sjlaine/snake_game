@@ -14,11 +14,11 @@
 #define HEIGHT 21
 
 #define EMPTY 0
-#define APPLE 1 // 1 = apple
-#define SNAKE_UP 2 // 2 = snake up
-#define SNAKE_RIGHT 3 // 3 = snake right
-#define SNAKE_DOWN 4 // 4 = snake down
-#define SNAKE_LEFT 5 // 5 = snake left
+#define APPLE 1
+#define SNAKE_UP 2
+#define SNAKE_RIGHT 3
+#define SNAKE_DOWN 4
+#define SNAKE_LEFT 5
 
 #define START_X ((WIDTH / 2) - 1)
 #define START_Y ((HEIGHT / 2) - 1)
@@ -30,7 +30,16 @@
 #define ARROW_LEFT 68
 #define ARROW_RIGHT 67
 
+// colors
+#define MAG "\e[0;35m"
+#define GRN "\e[0;32m"
+#define BCYN "\e[1;36m"
+#define LGRY "\e[0;37m"
+
+#define reset "\e[0m"
+
 int board[HEIGHT][WIDTH];
+int score = 0;
 
 int snake_head_x = START_X;
 int snake_head_y = START_Y;
@@ -42,8 +51,31 @@ void display_board() {
   printf("\n\r");
 
   for(int y = 0; y < HEIGHT; ++y) {
+    printf(" ");
     for(int x = 0; x < WIDTH; ++x) {
-      printf("%d ", board[y][x]);
+      int spot = board[y][x];
+      if (spot == APPLE) {
+        printf(MAG "0 " reset);
+      } else if (x == snake_head_x && y == snake_head_y) {
+        switch(spot) {
+          case SNAKE_UP:
+            printf(GRN "^ " reset);
+            break;
+          case SNAKE_RIGHT:
+            printf(GRN "> " reset);
+            break;
+          case SNAKE_DOWN:
+            printf(GRN "v " reset);
+            break;
+          case SNAKE_LEFT:
+            printf(GRN "< " reset);
+            break;
+        }
+      } else if (spot >= SNAKE_UP) {
+        printf(GRN "O " reset);
+      } else {
+        printf(LGRY ". " reset);
+      }
     }
 
     printf("\n\r");
@@ -67,7 +99,6 @@ void initialize_board() {
 }
 
 void remove_tail() {
-  // unless an apple eaten, move tail in the same way as head
   int current_tail_direction = board[snake_tail_y][snake_tail_x];
   int new_tail_x = snake_tail_x;
   int new_tail_y = snake_tail_y;
@@ -93,9 +124,6 @@ void remove_tail() {
 }
 
 void move_snake_head(int direction) {
-  // (later: unless apple eaten)
-  // remove snake from tail current location
-  // increment tail and head
   int new_head_x = snake_head_x;
   int new_head_y = snake_head_y;
 
@@ -118,7 +146,8 @@ void move_snake_head(int direction) {
 
 
   if (new_location_type >= SNAKE_UP || snake_head_x >= WIDTH || snake_head_y >= HEIGHT) {
-    printf("Sorry, you lost!\n\r");
+    endwin();
+    printf(BCYN "Sorry, you lost!\n\rScore: %d\n\r" reset, score);
     exit(1);
   } else {
     // set the prev head to current direction
@@ -132,6 +161,7 @@ void move_snake_head(int direction) {
 
     if (new_location_type == APPLE) {
       // leave tail alone
+      score++;
       place_apple();
     } else {
       remove_tail();
@@ -140,7 +170,6 @@ void move_snake_head(int direction) {
 }
 
 void next_board(int direction) {
-  // for any non-head snake, the snake takes over the value of the next spot
   move_snake_head(direction);
 }
 
@@ -162,8 +191,6 @@ int main() {
   srand(time(NULL));
   keypad(stdscr, TRUE);
   initialize_board();
-
-  setlocale(LC_ALL, "");
   initscr();
   cbreak();
 
@@ -198,7 +225,3 @@ int main() {
   endwin();
   return 0;
 }
-
-// move head and move tail funcs
-// move head already exists basically
-// move tail: unless apple, move tail the same as head
