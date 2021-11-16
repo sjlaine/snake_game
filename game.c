@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <curses.h>
 #include <locale.h>
+#include <inttypes.h>
 
 // need to know where the front and back of the snake are
 // 2d array: position (x, y), whether it's a snake, direction
@@ -175,17 +176,28 @@ void next_board(int direction) {
 
 int get_arrow_keys() {
   refresh();
-// record time
-  unsigned long timestamp = clock_gettime
-  int c;
 
+  struct timespec beforeTime;
+  clock_gettime(CLOCK_REALTIME,&beforeTime);    
+
+  int c;
+  flushinp();
   if (getch() == ESC) {
     if (getch() == CTRL) {
       c = getch();
     }
   }
+
 // calculate time elapsed
+    struct timespec afterTime;
+    clock_gettime(CLOCK_REALTIME,&afterTime);
+    long timeDiff = afterTime.tv_nsec - beforeTime.tv_nsec;  
+
 // if less than 1 sec, timeout for the difference
+    long makeUpTime = 1000000000 - timeDiff;
+    if (makeUpTime > 0) {
+      usleep(makeUpTime / 1000); 
+    }
   return c;
 }
 
@@ -195,7 +207,7 @@ int main() {
   initialize_board();
   initscr();
   halfdelay(10);
-
+  
   int next_direction = SNAKE_RIGHT;
 
   while(1) {
