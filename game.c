@@ -175,29 +175,40 @@ void next_board(int direction) {
 }
 
 int get_arrow_keys() {
-  refresh();
-
   struct timespec beforeTime;
   clock_gettime(CLOCK_REALTIME,&beforeTime);    
 
   int c;
-  flushinp();
-  if (getch() == ESC) {
-    if (getch() == CTRL) {
-      c = getch();
-    }
-  }
+  long timeDiff = 0;
+  // flushinp();
 
-// calculate time elapsed
+  // while timeDiff less than 1s, build arrowkey string
+  while(timeDiff < 100000000) {
+    if (getch() == ESC) {
+      if (getch() == CTRL) {
+        c = getch();
+      }
+    }
+
     struct timespec afterTime;
     clock_gettime(CLOCK_REALTIME,&afterTime);
-    long timeDiff = afterTime.tv_nsec - beforeTime.tv_nsec;  
+    timeDiff = afterTime.tv_nsec - beforeTime.tv_nsec;
+  }
 
-// if less than 1 sec, timeout for the difference
-    long makeUpTime = 1000000000 - timeDiff;
-    if (makeUpTime > 0) {
-      usleep(makeUpTime / 1000); 
-    }
+  printf("timeDiff: %ld", timeDiff);
+
+  // refresh();
+
+  // calculate time elapsed
+  // struct timespec afterTime;
+  // clock_gettime(CLOCK_REALTIME,&afterTime);
+  // long timeDiff = afterTime.tv_nsec - beforeTime.tv_nsec;
+
+  // if less than 1 sec, timeout for the difference
+  // long makeUpTime = 1000000000 - timeDiff;
+  // if (makeUpTime > 0) {
+  //   usleep(makeUpTime / 1000);
+  // }
   return c;
 }
 
@@ -206,15 +217,13 @@ int main() {
   keypad(stdscr, TRUE);
   initialize_board();
   initscr();
-  halfdelay(10);
+  nodelay(stdscr, TRUE);
   
   int next_direction = SNAKE_RIGHT;
 
   while(1) {
     printf("\033[H\033[J\033[H");
-
-    next_board(next_direction);
-    display_board();
+    printf("in the first while");
 
     int c = get_arrow_keys();
 
@@ -235,6 +244,9 @@ int main() {
         break;
     }
   }
+
+  next_board(next_direction);
+  display_board();
 
   endwin();
   return 0;
