@@ -25,7 +25,7 @@
 #define START_Y ((HEIGHT / 2) - 1)
 
 #define ESC 27
-#define CTRL 91
+// #define CTRL 91
 #define ARROW_UP 119 // (w)     65 A
 #define ARROW_DOWN 115 // (s)   66 B
 #define ARROW_LEFT 97 // (a)    68 D
@@ -53,6 +53,7 @@ void display_board() {
 
   for(int y = 0; y < HEIGHT; ++y) {
     printf(" ");
+
     for(int x = 0; x < WIDTH; ++x) {
       int spot = board[y][x];
       if (spot == APPLE) {
@@ -81,6 +82,8 @@ void display_board() {
 
     printf("\n\r");
   }
+
+  refresh();
 }
 
 void place_apple() {
@@ -181,21 +184,22 @@ int get_arrow_keys() {
 
   int c;
   unsigned long long timeDiff = 0;
-  // flushinp();
 
   // while timeDiff less than 1s, build arrowkey string
   while(timeDiff < 1000000000) {
-    // if (getch() == ESC) {
-      // if (getch() == CTRL) {
-       c = getch();
-      // }
-    // }
+    int new_key = getch();
+
+    if(new_key > 0) {
+      c = new_key;
+    }
 
     afterTime = clock_gettime_nsec_np(CLOCK_REALTIME);
     timeDiff = afterTime - beforeTime;
   }
-  printf("beforeTime: %ld, afterTime: %ld \n\r", beforeTime, afterTime);
-  printf("timeDiff: %ld \n\r", timeDiff);
+
+  // printf("c: %d \n\r", c);
+  // printf("beforeTime: %llu, afterTime: %llu \n\r", beforeTime, afterTime);
+  // printf("timeDiff: %llu \n\r", timeDiff);
 
   // refresh();
 
@@ -206,19 +210,15 @@ int main() {
   srand(time(NULL));
   keypad(stdscr, TRUE);
   initialize_board();
-  // initscr();
-  // noecho();
-  // cbreak();
-  // nodelay(stdscr, TRUE);
+  initscr();
+  noecho();
+  cbreak();
+  nodelay(stdscr, TRUE);
   
   int next_direction = SNAKE_RIGHT;
 
   while(1) {
     printf("\033[H\033[J\033[H");
-    printf("top of the main while \n\r");
-
-    display_board();
-
     int c = get_arrow_keys();
 
     switch(c) {
@@ -237,7 +237,9 @@ int main() {
       default:
         break;
     }
+
     next_board(next_direction);
+    display_board();
   }
 
   endwin();
