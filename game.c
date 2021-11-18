@@ -26,10 +26,10 @@
 
 #define ESC 27
 #define CTRL 91
-#define ARROW_UP 65
-#define ARROW_DOWN 66
-#define ARROW_LEFT 68
-#define ARROW_RIGHT 67
+#define ARROW_UP 119 // (w)     65 A
+#define ARROW_DOWN 115 // (s)   66 B
+#define ARROW_LEFT 97 // (a)    68 D
+#define ARROW_RIGHT 100 // (d)  67 C
 
 // colors
 #define MAG "\e[0;35m"
@@ -146,7 +146,8 @@ void move_snake_head(int direction) {
   int new_location_type = board[new_head_y][new_head_x];
 
 
-  if (new_location_type >= SNAKE_UP || snake_head_x >= WIDTH || snake_head_y >= HEIGHT) {
+  // check for losing
+  if (new_location_type >= SNAKE_UP || snake_head_x >= WIDTH - 1 || snake_head_y >= HEIGHT -1) {
     endwin();
     printf(BCYN "Sorry, you lost!\n\rScore: %d\n\r" reset, score);
     exit(1);
@@ -175,40 +176,29 @@ void next_board(int direction) {
 }
 
 int get_arrow_keys() {
-  struct timespec beforeTime;
-  clock_gettime(CLOCK_REALTIME,&beforeTime);    
+  unsigned long long beforeTime = clock_gettime_nsec_np(CLOCK_REALTIME);
+  unsigned long long afterTime = 0;
 
   int c;
-  long timeDiff = 0;
+  unsigned long long timeDiff = 0;
   // flushinp();
 
   // while timeDiff less than 1s, build arrowkey string
-  while(timeDiff < 100000000) {
-    if (getch() == ESC) {
-      if (getch() == CTRL) {
-        c = getch();
-      }
-    }
+  while(timeDiff < 1000000000) {
+    // if (getch() == ESC) {
+      // if (getch() == CTRL) {
+       c = getch();
+      // }
+    // }
 
-    struct timespec afterTime;
-    clock_gettime(CLOCK_REALTIME,&afterTime);
-    timeDiff = afterTime.tv_nsec - beforeTime.tv_nsec;
+    afterTime = clock_gettime_nsec_np(CLOCK_REALTIME);
+    timeDiff = afterTime - beforeTime;
   }
-
-  printf("timeDiff: %ld", timeDiff);
+  printf("beforeTime: %ld, afterTime: %ld \n\r", beforeTime, afterTime);
+  printf("timeDiff: %ld \n\r", timeDiff);
 
   // refresh();
 
-  // calculate time elapsed
-  // struct timespec afterTime;
-  // clock_gettime(CLOCK_REALTIME,&afterTime);
-  // long timeDiff = afterTime.tv_nsec - beforeTime.tv_nsec;
-
-  // if less than 1 sec, timeout for the difference
-  // long makeUpTime = 1000000000 - timeDiff;
-  // if (makeUpTime > 0) {
-  //   usleep(makeUpTime / 1000);
-  // }
   return c;
 }
 
@@ -216,14 +206,18 @@ int main() {
   srand(time(NULL));
   keypad(stdscr, TRUE);
   initialize_board();
-  initscr();
-  nodelay(stdscr, TRUE);
+  // initscr();
+  // noecho();
+  // cbreak();
+  // nodelay(stdscr, TRUE);
   
   int next_direction = SNAKE_RIGHT;
 
   while(1) {
     printf("\033[H\033[J\033[H");
-    printf("in the first while");
+    printf("top of the main while \n\r");
+
+    display_board();
 
     int c = get_arrow_keys();
 
@@ -243,10 +237,8 @@ int main() {
       default:
         break;
     }
+    next_board(next_direction);
   }
-
-  next_board(next_direction);
-  display_board();
 
   endwin();
   return 0;
