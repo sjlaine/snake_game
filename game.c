@@ -7,10 +7,6 @@
 #include <locale.h>
 #include <inttypes.h>
 
-// need to know where the front and back of the snake are
-// 2d array: position (x, y), whether it's a snake, direction
-// also store start and end coordinates of the snake
-
 #define WIDTH 21
 #define HEIGHT 21
 
@@ -25,11 +21,11 @@
 #define START_Y ((HEIGHT / 2) - 1)
 
 #define ESC 27
-// #define CTRL 91
-#define ARROW_UP 119 // (w)     65 A
-#define ARROW_DOWN 115 // (s)   66 B
-#define ARROW_LEFT 97 // (a)    68 D
-#define ARROW_RIGHT 100 // (d)  67 C
+#define CTRL 91
+#define ARROW_UP 65 //     65 A
+#define ARROW_DOWN 66 //   66 B
+#define ARROW_LEFT 68 //    68 D
+#define ARROW_RIGHT 67 //  67 C
 
 // colors
 #define MAG "\e[0;35m"
@@ -38,6 +34,9 @@
 #define LGRY "\e[0;37m"
 
 #define reset "\e[0m"
+
+#define DEFAULT_SPEED 1000000000
+#define SPEEDUP_MULTIPLIER 300000000
 
 int board[HEIGHT][WIDTH];
 int score = 0;
@@ -169,7 +168,8 @@ void move_snake_head(int direction) {
     if (new_location_type == APPLE) {
       // leave tail alone
       score++;
-      snake_speed_ns = snake_speed_ns -  50000000;
+
+      snake_speed_ns = DEFAULT_SPEED - (SPEEDUP_MULTIPLIER * log(score + 1));
       place_apple();
     } else {
       remove_tail();
@@ -188,7 +188,6 @@ int get_arrow_keys() {
   int c;
   unsigned long long timeDiff = 0;
 
-
   // while timeDiff less than 1s, build arrowkey string
   while(timeDiff < snake_speed_ns) {
     int new_key = getch();
@@ -200,12 +199,6 @@ int get_arrow_keys() {
     afterTime = clock_gettime_nsec_np(CLOCK_REALTIME);
     timeDiff = afterTime - beforeTime;
   }
-
-  // printf("c: %d \n\r", c);
-  // printf("beforeTime: %llu, afterTime: %llu \n\r", beforeTime, afterTime);
-  // printf("timeDiff: %llu \n\r", timeDiff);
-
-  // refresh();
 
   return c;
 }
