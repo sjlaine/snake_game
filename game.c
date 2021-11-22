@@ -48,6 +48,8 @@ int snake_head_y = START_Y;
 int snake_tail_x = START_X;
 int snake_tail_y = START_Y;
 
+unsigned long snake_speed_ns = 1000000000;
+
 void display_board() {
   printf("\n\r");
 
@@ -167,6 +169,7 @@ void move_snake_head(int direction) {
     if (new_location_type == APPLE) {
       // leave tail alone
       score++;
+      snake_speed_ns = snake_speed_ns -  50000000;
       place_apple();
     } else {
       remove_tail();
@@ -185,8 +188,9 @@ int get_arrow_keys() {
   int c;
   unsigned long long timeDiff = 0;
 
+
   // while timeDiff less than 1s, build arrowkey string
-  while(timeDiff < 1000000000) {
+  while(timeDiff < snake_speed_ns) {
     int new_key = getch();
 
     if(new_key > 0) {
