@@ -150,7 +150,7 @@ void move_snake_head(int direction) {
   int new_location_type = board[new_head_y][new_head_x];
 
 
-  // check for losing
+  // check for losing move
   if (new_location_type >= SNAKE_UP || snake_head_x >= WIDTH - 1 || snake_head_y >= HEIGHT -1) {
     endwin();
     printf(BCYN "Sorry, you lost!\n\rScore: %d\n\r" reset, score);
@@ -169,8 +169,12 @@ void move_snake_head(int direction) {
       // leave tail alone
       score++;
 
-      snake_speed_ns = DEFAULT_SPEED - (SPEEDUP_MULTIPLIER * log(score + 1));
-      place_apple();
+      unsigned long interval_decrease = SPEEDUP_MULTIPLIER * log(score + 1);
+
+      if(DEFAULT_SPEED > interval_decrease) {
+        snake_speed_ns = DEFAULT_SPEED - interval_decrease;
+        place_apple();
+      }
     } else {
       remove_tail();
     }
@@ -182,22 +186,22 @@ void next_board(int direction) {
 }
 
 int get_arrow_keys() {
-  unsigned long long beforeTime = clock_gettime_nsec_np(CLOCK_REALTIME);
-  unsigned long long afterTime = 0;
+  unsigned long long before_time = clock_gettime_nsec_np(CLOCK_REALTIME);
+  unsigned long long after_time = 0;
 
   int c;
-  unsigned long long timeDiff = 0;
+  unsigned long long time_diff = 0;
 
-  // while timeDiff less than 1s, build arrowkey string
-  while(timeDiff < snake_speed_ns) {
+  // while time_diff less than 1s, build arrowkey string
+  while(time_diff < snake_speed_ns) {
     int new_key = getch();
 
     if(new_key > 0) {
       c = new_key;
     }
 
-    afterTime = clock_gettime_nsec_np(CLOCK_REALTIME);
-    timeDiff = afterTime - beforeTime;
+    after_time = clock_gettime_nsec_np(CLOCK_REALTIME);
+    time_diff = after_time - before_time;
   }
 
   return c;
